@@ -11,10 +11,20 @@ const filterObj = (obj, ...allows) => {
   return newObj;
 };
 
+// exports.getAllUsers = catchAsync(async (req, res) => {
+//   const users = await User.find();
+//   res.status(200).json({
+//     status: 'success',
+//     length: users.length,
+//     users,
+//   });
+// });
+
 exports.getUser = catchAsync(async (req, res, next) => {
   const users = await User.find();
   res.status(200).json({
     status: 'success',
+    length: users.length,
     users,
   });
 });
@@ -44,5 +54,14 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     user,
+  });
+});
+
+exports.deleteMe = catchAsync(async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
+
+  res.status(204).json({
+    status: 'success',
+    data: null,
   });
 });

@@ -38,17 +38,33 @@ const userSchema = new mongoose.Schema({
       message: 'Password Doesnot Match',
     },
   },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
   passwordChangedAt: Date,
   passwordExpiresAt: Date,
   passwordResetLink: String,
 });
 
+userSchema.pre(/^find/, function (next) {
+  console.log('inside middleware');
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-
   this.password = await bcrypt.hash(this.password, 12);
-
   this.passwordConfirm = undefined;
+  next();
+});
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -66,13 +82,6 @@ userSchema.methods.isPassChanged = function (JWTTimeStamp) {
   }
   return false;
 };
-
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || this.isNew) return next();
-
-  this.passwordChangedAt = Date.now() - 1000;
-  next();
-});
 
 userSchema.methods.generateResetLink = function () {
   const resetLink = crypto.randomBytes(32).toString('hex');

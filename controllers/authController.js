@@ -15,6 +15,10 @@ const generateToken = (id) => {
 
 const createSendToken = (user, statuscode, res) => {
   const token = generateToken(user._id);
+
+  res.cookie('jwt', token, {
+    httpOnly: true,
+  });
   res.status(statuscode).json({
     status: 'success',
     token,
@@ -163,14 +167,17 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   //GET USER FROM COLLECTIONS
   let user = await User.findById(req.user.id).select('+password');
   console.log(user);
+
   //CHECK IF CURENT ASSWORD IS CORRECT
   if (!user.correctPassword(req.body.passwordCurrent, user.password)) {
     return next(new AppError('Password is Incorrect', 401));
   }
+
   //SAVE THE NEW PASSWORD
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
+
   //LOGS IN USER
   createSendToken(user, 200, res);
 });
