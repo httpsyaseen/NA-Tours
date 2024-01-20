@@ -13,8 +13,9 @@ app.use(express.json());
 app.use(morgan('dev'));
 //app.use(bodyParser.urlencoded({ extended: true }));
 
-const tourRoute = require('./routes/tourRouter');
-const userRoute = require('./routes/userRoutes');
+const tourRouter = require('./routes/tourRouter');
+const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRouter');
 const AppError = require('./utils/appError');
 const myError = require('./controllers/errorController');
 
@@ -43,8 +44,9 @@ app.use(
   }),
 );
 
-app.use('/api/v1/tours', tourRoute);
-app.use('/api/v1/users', userRoute);
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 app.all('*', (req, res, next) => {
   next(new AppError(`the ${req.url} is not available`, 404));
 });
