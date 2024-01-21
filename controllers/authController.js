@@ -77,6 +77,8 @@ exports.protected = catchAsync(async (req, res, next) => {
     );
   }
 
+  console.log(freshUser);
+
   //CHECK IF USER HAS CHANGED PASSWORD AFTER TOKEN GENERATION(LOGIN)
   if (freshUser.isPassChanged(decode.iat)) {
     return next(new AppError('User have changed the Password. Login again.'));
