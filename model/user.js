@@ -49,7 +49,6 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre(/^find/, function (next) {
-  console.log('inside middleware');
   this.find({ active: { $ne: false } });
   next();
 });

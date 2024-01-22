@@ -1,39 +1,23 @@
 const catchAsync = require('../utils/catchAsync');
 const User = require('./../model/user');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allows) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
     if (allows.includes(el)) newObj[el] = obj[el];
   });
-
   return newObj;
 };
 
-// exports.getAllUsers = catchAsync(async (req, res) => {
-//   const users = await User.find();
-//   res.status(200).json({
-//     status: 'success',
-//     length: users.length,
-//     users,
-//   });
-// });
-
-exports.getUser = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-  res.status(200).json({
-    status: 'success',
-    length: users.length,
-    users,
-  });
-});
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  //create error if users POSTs passsword
-
   if (req.body.password || req.body.passwordConfirm) {
-    console.log('inside');
     return next(
       new AppError(
         'To update password Please choose the udpate password route',
@@ -65,3 +49,8 @@ exports.deleteMe = catchAsync(async (req, res) => {
     data: null,
   });
 });
+
+exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);

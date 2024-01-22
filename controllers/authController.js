@@ -77,8 +77,6 @@ exports.protected = catchAsync(async (req, res, next) => {
     );
   }
 
-  console.log(freshUser);
-
   //CHECK IF USER HAS CHANGED PASSWORD AFTER TOKEN GENERATION(LOGIN)
   if (freshUser.isPassChanged(decode.iat)) {
     return next(new AppError('User have changed the Password. Login again.'));
@@ -92,7 +90,7 @@ exports.restrictedTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role))
       return next(
-        new AppError('The user donot have permission to delete the tour', 403),
+        new AppError('The user donot have permission to do this action', 403),
       );
 
     next();
