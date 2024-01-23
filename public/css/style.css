@@ -671,6 +671,7 @@ body {
 .reviews__star--active {
   fill: #55c57a;
 }
+
 .reviews__star--inactive {
   fill: #bbb;
 }
