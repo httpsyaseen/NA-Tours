@@ -56,33 +56,31 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.protected = catchAsync(async (req, res, next) => {
   //GETTING TOKEN AND CHECK IF IT'S THERE
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
+  if (req.cookies.jwt) {
+    token = req.cookies.jwt;
 
-  if (!token) {
-    next(new AppError('You are not logged in. Login to get access'), 401);
-  }
-  //VERIFICATION TOKEN
-  const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET_KEY);
-
-  //CHECK IF STILL USER EXISTS IN THE DB
-  const freshUser = await User.findById(decode.id); //after generating token checking if he user of that token exists or it gets deleted later
-  if (!freshUser) {
-    return next(
-      new AppError('The user with the logged in token get deleted.', 401),
+    if (!token) {
+      next(new AppError('You are not logged in. Login to get access'), 401);
+    }
+    const decode = await promisify(jwt.verify)(
+      token,
+      process.env.JWT_SECRET_KEY,
     );
+
+    const freshUser = await User.findById(decode.id); //after generating token checking if he user of that token exists or it gets deleted later
+    if (!freshUser) {
+      return next();
+    }
+
+    //CHECK IF USER HAS CHANGED PASSWORD AFTER TOKEN GENERATION(LOGIN)
+    if (freshUser.isPassChanged(decode.iat)) {
+      return next();
+    }
+
+    res.locals.user = freshUser;
+    return next();
   }
 
-  //CHECK IF USER HAS CHANGED PASSWORD AFTER TOKEN GENERATION(LOGIN)
-  if (freshUser.isPassChanged(decode.iat)) {
-    return next(new AppError('User have changed the Password. Login again.'));
-  }
-
-  req.user = freshUser;
   next();
 });
 
